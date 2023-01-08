@@ -114,7 +114,7 @@ $('.backup').click(function () {
 		try {
 			$.ajax({
 				type: "GET",
-				url: 'http://worldtimeapi.org/api/timezone/Europe/Istanbul',
+				url: 'https://worldtimeapi.org/api/timezone/Europe/Istanbul',
 				success: function (data) {
 					if(!isNull(data) && !isUndefined(data)){
 						onDownload("GelirGider_" + data.datetime.substring(0, 10) + "_" + data.datetime.substring(11, 19).replaceAll(':', '.') + "_backup")
