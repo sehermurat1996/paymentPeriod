@@ -24,9 +24,6 @@ $('#periodDropDown').change(event => {
 $('.btn-add').click(function () {
 
 	try {
-
-
-
 		let detail = document.getElementsByClassName("form-control").name.value;
 		let amount = document.getElementsByClassName("form-control").amount.value;
 
@@ -38,7 +35,7 @@ $('.btn-add').click(function () {
 		var pushData = {
 			name: detail,
 			amount: amount,
-			date: new Date().getUTCDay()
+			date: new Date().toLocaleDateString('tr-TR', { weekday:"short", year:"numeric", month:"short", day:"numeric"}) + " "+new Date().toLocaleTimeString('tr-TR')
 		};
 		fireData[historyPeriod].push(pushData);
 
@@ -67,7 +64,7 @@ $('.btn-add-period').click(function () {
 		}
 		PocketRealtime.setValue({
 			path:period,
-			params:[{ "name": "EnPara Kredi", "amount": "4020" }],
+			params:[{ "name": "", "amount": "" }],
 			done:(response)=>{
 				successAddPeriodValidation();
 			},
