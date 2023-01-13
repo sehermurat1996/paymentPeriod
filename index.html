@@ -8,6 +8,7 @@
 	<link href="index.css" rel="stylesheet">
 	<script src="https://www.gstatic.com/firebasejs/8.2.7/firebase-app.js"></script>
 	<script src="https://www.gstatic.com/firebasejs/8.2.7/firebase-database.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/8.2.7/firebase-auth.js"></script>
 	<script src="PocketRealtime.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/numeraljs/languages/tr.js"></script>
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css"
@@ -29,20 +30,20 @@
 
 <body style="background-color: #433c24;">
 	<h1>
-		<center style="color:rgb(201, 197, 197) ;">Onay's Payments Periods</center>
+		<center style="color:rgb(201, 197, 197) ;">Genel Ödeme Periyotları</center>
 	</h1>
 	<div class="container">
 		<!--<div class="loading">Loading&#8230;</div>-->
 		<div class="row">
 			<div style="margin-left: 15px; display: flex; align-items: flex-start; flex:1">
 				<select id="periodDropDown" , name="History" style="    background-color: #7c7c7c;
-				color: whitesmoke;">
+				color: whitesmoke; width: 120px; height: 30px;">
 				</select>
 			</div>
 
 			<div style="margin-right: 15px;display: flex;  align-items: flex-end; flex:1;justify-content: end;">
 				<button type="button" class="periodButton newPeriod" id="newPeriod" data-toggle="modal"
-					data-target="#addPeriod" style="background-color: #7c7c7c; color: whitesmoke; border: none;">Yeni Dönem</button>
+					data-target="#addPeriod" style="background-color: #7c7c7c; color: whitesmoke; border: none;" readonly>Yeni Dönem</button>
 
 				<button type="button" class="periodButton deletePeriod" id="deletePeriod"
 					style="background-color: #e41c1c; color: whitesmoke; margin-left: 2px; border:none">Dönemi Sil</button>
@@ -50,16 +51,18 @@
 		</div>
 		<br><br>
 		<div class="handsontable-container" id="grid-table"></div><br>
+		<span style="display: flex; justify-content: center;" id="infoSpan"></span>
 		<div class="deleteInfo" id="deleteInfo"></div><br>
 		<button type="button" class="mdl-button mdl-js-button mdl-js-ripple-effect" data-toggle="modal"
 			data-target="#registerModal">Yeni</button>
 		<button type="button" class="mdl-button save" id="save">Kaydet</button>
 		<button type="button" class="mdl-button backup" style="color:whitesmoke;background-color: rgb(23, 23, 39);" id="backup">Get BackUp</button>
+		<button type="button" class="mdl-button statistics" style="color:whitesmoke;background-color: rgb(23, 23, 39);" id="statistics" data-target="#statisticsModal" data-toggle="modal">İstatistikler</button>
 		<div class="modal registerModal" id="registerModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
 			<div class="modal-dialog modal-dialog-centered" role="document">
 				<div class="modal-content">
 					<div class="modal-header">
-						<h4 class="modal-title modal-title-centered" id="myModalLabel">Payment Add</h4>
+						<h4 class="modal-title modal-title-centered" id="myModalLabel">Ödeme Ekleme Paneli</h4>
 						<p id="popup-info-period-msg"></p>
 					</div>
 					<form action="{{ route('register') }}" method="POST">
@@ -68,13 +71,13 @@
 								<div class="row">
 									<div class="col-md-3"><label for="name">Detay:</label></div>
 									<div class="col-md-9"><input type="text" name="name" class="form-control" id="name"
-											placeholder="Detail payment"></div>
+											placeholder="Ödeme Detayı Ekleyin..."></div>
 								</div>
 								<br>
 								<div class="row">
 									<div class="col-md-3"><label for="amount">Tutar:</label></div>
 									<div class="col-md-9"><input type="amount" name="amount" class="form-control"
-											id="amount" placeholder="Payment amount"></div>
+											id="amount" placeholder="Ödeme Tutarı Ekleyin..."></div>
 								</div>
 
 								<div class="row" style="display: flex; align-items: center; justify-content: center;">
@@ -86,7 +89,7 @@
 						<div>
 							<div style="margin: 5px;">
 								<label for="file">Toplu dönem yükle</label><br>
-								<input type="file" id="file" name="file" />
+								<input type="file" id="file" name="file" onchange="readURL(this.value)"/>
 								<button type="button" class="importFile" id="importFile">Yükle</button>
 							</div>
 							<div class="row" style="display: flex; align-items: center; justify-content: center;">
@@ -94,7 +97,7 @@
 							</div>
 						</div>
 						<div class="modal-footer">
-							<button type="button" class="btn btn-close" data-dismiss="modal">Close</button>
+							<button type="button" class="btn btn-close" data-dismiss="modal">Kapat</button>
 							<button type="button" class="btn btn-primary btn-add">Harcama Ekle</button>
 						</div>
 					</form>
@@ -105,16 +108,16 @@
 			<div class="modal-dialog modal-dialog-centered" role="document">
 				<div class="modal-content">
 					<div class="modal-header">
-						<h4 class="modal-title modal-title-centered" id="myModalLabel">Insert Period</h4>
+						<h4 class="modal-title modal-title-centered" id="myModalLabel">Dönem Ekleme Paneli</h4>
 						<p id="popup-info-period-msg"></p>
 					</div>
 					<form action="{{ route('register') }}" method="POST">
 						<div class="modal-body">
 							<div class="form-group">
 								<div class="row">
-									<div class="col-md-3"><label for="periodName">Period Name:</label></div>
+									<div class="col-md-3"><label for="periodName">Dönem Adı:</label></div>
 									<div class="col-md-9"><input type="text" name="name" class="form-control"
-											id="periodName" placeholder="period name"></div>
+											id="periodName" placeholder="Dönem Adı Girin..."></div>
 								</div>
 								<br>
 								<div class="row" style="display: flex; align-items: center; justify-content: center;">
@@ -125,10 +128,28 @@
 							</div>
 						</div>
 						<div class="modal-footer">
-							<button type="button" class="btn btn-close" data-dismiss="modal">Close</button>
-							<button type="button" class="btn btn-primary btn-add-period">Add Period</button>
+							<button type="button" class="btn btn-close" data-dismiss="modal">Kapat</button>
+							<button type="button" class="btn btn-primary btn-add-period">Dönem Ekle</button>
 						</div>
 					</form>
+				</div>
+			</div>
+		</div>
+
+		<div class="modal statisticsModal" id="statisticsModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+			<div class="modal-dialog modal-dialog-centered" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h4 class="modal-title modal-title-centered" id="myModalLabel">İstatistikler</h4>
+						<p id="popup-info-period-msg"></p>
+					</div>
+
+					<div class="modal-body">
+						<div class="handsontable-container-statistics" id="grid-table"></div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-close" data-dismiss="modal">Kapat</button>
+					</div>
 				</div>
 			</div>
 		</div>

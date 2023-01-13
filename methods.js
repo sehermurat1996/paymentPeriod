@@ -22,9 +22,9 @@ function getAttribute(source, key, defaultValue) {
 	let snapshot = source;
 
 	function recursion(recursiveKey) {
-		for (let i = 0; i < recursiveKey.length; i++) {
-			if (isObject(snapshot[recursiveKey[i]])) {
-				snapshot = snapshot[recursiveKey[i]];
+		for (const element of recursiveKey) {
+			if (isObject(snapshot[element])) {
+				snapshot = snapshot[element];
 			}
 			else {
 				if (!isUndefined(snapshot[key])) return snapshot[key];
@@ -41,7 +41,6 @@ function startTable(data, callback) {
 		data: restoreData(data.reverse()),
 		width: "100%",
 		height: "350px",
-		colHeaders: true,
 		rowHeaders: true,
 		stretchH: "all",
 		rowHeights: 40,
@@ -104,16 +103,14 @@ function init(callback) {
 }
 
 function download(content, fileName, contentType) {
-	try
-	{
+	try {
 		const a = document.createElement("a");
 		const file = new Blob([content], { type: contentType });
 		a.href = URL.createObjectURL(file);
 		a.download = fileName;
 		a.click();
 	}
-	catch (error)
-	{
+	catch (error) {
 		alert("DownloadError - İndirme işlemi sırasında hata ile karşılaşıldı.")
 	}
 
@@ -121,4 +118,84 @@ function download(content, fileName, contentType) {
 
 function onDownload(downloadName) {
 	download(JSON.stringify(fireData), downloadName + ".json", "text/plain");
+}
+
+function backupValidation(callback) {
+	firebase.auth().signInWithEmailAndPassword("imuratony@gmail.com", prompt("$root:"))
+		.then((userCredential) => {
+			callback(true);
+		})
+		.catch((error) => {
+			callback(false);
+		});
+}
+
+function calculateStatistics(callback) {
+	let keys = Object.keys(fireData);
+	let sumPayments = 0;
+	let statisticsData = [];
+	for(const element of keys)
+	{
+		let sumPaymentsObject={};
+		fireData[element].forEach(items=>{
+			sumPayments += parseFloat(items.amount == "" ? 0 : items.amount)
+		})
+		sumPaymentsObject = {}
+		sumPaymentsObject["period"] = element;
+		sumPaymentsObject["amount"] = sumPayments;
+		statisticsData.push(sumPaymentsObject);
+		sumPayments = 0;
+	}
+	setTimeout(() => {
+		statisticTableCallback(statisticsData,()=>{
+
+		})
+	}, 1);
+
+
+
+}
+
+function statisticTableCallback(data,callback) {
+	let container = document.querySelector(".handsontable-container-statistics");
+	let statisticsTable = new Handsontable(container, {
+		data: data,
+		width: "100%",
+		height: "200px",
+		rowHeaders: true,
+		stretchH: "all",
+		rowHeights: 40,
+		colHeaders: ["Dönem", "Toplam Ödenen"],
+		contextMenu: true,
+		modifyColWidth: function (width, col) {
+			if (width > 250) return 250
+		},
+		columns: [
+			{ data: "period" },
+			{
+				data: "amount",
+				type: "numeric",
+				numericFormat: { pattern: "$0,0.00", culture: "tr-TR" },
+			}
+		],
+	});
+	$('#hot-display-license-info').remove();
+	callback(statisticsTable)
+}
+
+function readURL(params) {
+	if(document.getElementById('file').files[0].type == "application/json"){
+		document.getElementById('importFile').removeAttribute("hidden")
+	}
+	else{
+		document.getElementById('importFile').setAttribute("hidden",true);
+	}
+}
+
+function setButtonReadOnly(value){
+	let buttons = document.querySelectorAll('button');
+	for(const element of buttons){
+		element.disabled = value;
+	}
+
 }
