@@ -19,12 +19,12 @@ let PocketRealtime = (
                 let path = args.path;
                 let done = args.done;
                 if(path == "root"){
-                    firebase.database().ref("/").on("value",(snapshot)=>{
+                    firebase.database().ref("Odemeler/").on("value",(snapshot)=>{
                         done(snapshot.val())
                     })
                 }
                 else if(path.trim() != "root"){
-                    firebase.database().ref(path+"/").on("value",(snapshot)=>{
+                    firebase.database().ref("Odemeler/"+path+"/").on("value",(snapshot)=>{
                         done(snapshot.val())
                     })
                 }
@@ -41,7 +41,7 @@ let PocketRealtime = (
                 let path = args.path;
                 let done = args.done;
                 let params = args.params;
-                firebase.database().ref(path).set(params, (error) => {
+                firebase.database().ref("Odemeler/"+path).set(params, (error) => {
                     if (error) {
                         fail(error);
                     } else {
@@ -61,7 +61,7 @@ let PocketRealtime = (
             {
                     let path = args.path;
                     let done = args.done;
-                    firebase.database().ref(path).remove((error) => {
+                    firebase.database().ref("Odemeler/"+path).remove((error) => {
                         if (error) {
                             fail(error);
                         } else {
@@ -75,10 +75,46 @@ let PocketRealtime = (
             }
         }
 
+        function getFunds(args) {
+            let fail = args.fail;
+            try
+            {
+                let done = args.done;
+                firebase.database().ref("Fonlar/").on("value",(snapshot)=>{
+                    done(snapshot.val())
+                })
+            }
+            catch (error) {
+                fail(error);
+            }
+        }
+
+        function setFunds(args) {
+            let fail = args.fail;
+            try
+            {
+                 let done = args.done;
+                 let params = args.params;
+                 firebase.database().ref("Fonlar/").set(params, (error) => {
+                     if (error) {
+                         fail(error);
+                     } else {
+                         done(true);
+                     }
+                 })
+            }
+            catch (error)
+            {
+                 throw new Error(error).stack;
+            }
+        }
+
         return {
             getValue:getValue,
             setValue:setValue,
-            deleteValue:deleteValue
+            deleteValue:deleteValue,
+            getFunds:getFunds,
+            setFunds:setFunds
         }
     }
 )();

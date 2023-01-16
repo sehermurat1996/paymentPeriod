@@ -193,6 +193,60 @@ $('.deletePeriod').click(function () {
 	}
 })
 
+$('.btn-close').click(function(){
+	console.log("kapatıldı")
+})
+
 $('.statistics').click(function(){
 	calculateStatistics()
+})
+
+$('.funds').click(function(){
+	PocketRealtime.getFunds({
+		done:(response)=>{
+			/*fetch('https://finans.truncgil.com/today.json')
+			.then(response => response.json())
+			.then(data => {
+				console.log(data["gram-altin"])
+				calculateFunds();
+			});*/
+			fundsData = response;
+			calculateFunds(response);
+		},
+		fail:(error)=>{
+			throw new Error(error).stack;
+		}
+	})
+})
+
+$('.btn-reCalculate').click(function() {
+	let fudsTbl = fundsTable.getData();
+	senderFunds = [];
+	for(let i = 0;i < fudsTbl.length; i++){
+		let currencyType = fudsTbl[i][0];
+		let amount = fudsTbl[i][1];
+		let endex = fudsTbl[i][2];
+		let forTl = fudsTbl[i][3]
+		let rowData = {
+			"currencyType":currencyType,
+			"amount":amount,
+			"endex":endex,
+			"forTl":(parseFloat(endex).toFixed(2)*parseFloat(amount).toFixed(2))
+		}
+		senderFunds.push(rowData);
+	}
+	calculateFunds(senderFunds);
+})
+
+
+$(".btn-saveFunds").click(function(){
+	PocketRealtime.setFunds({
+		params:senderFunds,
+		done:(response)=>{
+			console.log("Kaydetme Sonucu: "+response);
+		},
+		fail:(error)=>{
+			throw new Error(error).stack;
+		}
+	})
 })

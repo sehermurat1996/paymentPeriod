@@ -1,8 +1,10 @@
 const degisken = "1";
 
 let table;
+let fundsTable;
 let fireData;
-
+let fundsData;
+let senderFunds = [];
 const INSERT_SUCCESS = "Kayıt işlemi başarılı";
 const INSERT_FAILED = "Kayıt Başarısız"
 
@@ -134,10 +136,9 @@ function calculateStatistics(callback) {
 	let keys = Object.keys(fireData);
 	let sumPayments = 0;
 	let statisticsData = [];
-	for(const element of keys)
-	{
-		let sumPaymentsObject={};
-		fireData[element].forEach(items=>{
+	for (const element of keys) {
+		let sumPaymentsObject = {};
+		fireData[element].forEach(items => {
 			sumPayments += parseFloat(items.amount == "" ? 0 : items.amount)
 		})
 		sumPaymentsObject = {}
@@ -147,7 +148,7 @@ function calculateStatistics(callback) {
 		sumPayments = 0;
 	}
 	setTimeout(() => {
-		statisticTableCallback(statisticsData,()=>{
+		statisticTableCallback(statisticsData, () => {
 
 		})
 	}, 1);
@@ -156,7 +157,7 @@ function calculateStatistics(callback) {
 
 }
 
-function statisticTableCallback(data,callback) {
+function statisticTableCallback(data, callback) {
 	let container = document.querySelector(".handsontable-container-statistics");
 	let statisticsTable = new Handsontable(container, {
 		data: data,
@@ -183,18 +184,66 @@ function statisticTableCallback(data,callback) {
 	callback(statisticsTable)
 }
 
+function fundsTableCallback(data, callback) {
+	let container = document.querySelector(".handsontable-container-funds");
+	fundsTable = new Handsontable(container, {
+		data: data[0],
+		width: "100%",
+		height: "200px",
+		rowHeaders: true,
+		stretchH: "all",
+		rowHeights: 40,
+		colHeaders: ["Döviz Türü", "Miktar", "Kur Endexi", "TL Karşılığı"],
+		contextMenu: true,
+		modifyColWidth: function (width, col) {
+			if (width > 250) return 250
+		},
+		columns: [
+			{ data: "currencyType" },
+			{
+				data: "amount",
+				type: "numeric",
+				numericFormat: { pattern: "$0,0.00", culture: "tr-TR" },
+			},
+			{
+				data: "endex",
+				type: "numeric",
+				numericFormat: { pattern: "$0,0.00", culture: "tr-TR" },
+			},
+			{
+				data: "forTl",
+				type: "numeric",
+				numericFormat: { pattern: "$0,0.00", culture: "tr-TR" },
+			}
+		],
+	});
+	$('#hot-display-license-info').remove();
+	callback(fundsTable)
+}
+
+function calculateFunds(params) {
+	let fundsTableData = [];
+	Object.values(params).filter(field => field.currencyType == 'Gram-Altın').map(i => i.forTl = (parseFloat(i.amount).toFixed(2) * i.endex))[0].toFixed(2)
+	fundsTableData.push(Object.values(params));
+	setTimeout(() => {
+		fundsTableCallback(fundsTableData, () => {
+
+		})
+	}, 1);
+}
+
 function readURL(params) {
-	if(document.getElementById('file').files[0].type == "application/json"){
+	if (document.getElementById('file').files[0].type == "application/json") {
 		document.getElementById('importFile').removeAttribute("hidden")
 	}
-	else{
-		document.getElementById('importFile').setAttribute("hidden",true);
+	else {
+		document.getElementById('importFile').setAttribute("hidden", true);
 	}
 }
 
-function setButtonReadOnly(value){
+function setButtonReadOnly(value) {
 	let buttons = document.querySelectorAll('button');
-	for(const element of buttons){
+	for (const element of buttons) {
 		element.disabled = value;
 	}
 
