@@ -223,7 +223,7 @@ function fundsTableCallback(data, callback) {
 
 function calculateFunds(params) {
 	let fundsTableData = [];
-	Object.values(params).filter(field => field.currencyType == 'Gram-Altın').map(i => i.forTl = (parseFloat(i.amount).toFixed(2) * i.endex))[0].toFixed(2)
+	Object.values(params).filter(field => field.currencyType == 'Gram-Altın').map(i => i.forTl = (parseFloat(i.amount).toFixed(2) * parseFloat(i.endex.replace(/[^0-9]/g, ''))/ 100))[0].toFixed(2)
 	fundsTableData.push(Object.values(params));
 	setTimeout(() => {
 		fundsTableCallback(fundsTableData, () => {

@@ -204,14 +204,19 @@ $('.statistics').click(function(){
 $('.funds').click(function(){
 	PocketRealtime.getFunds({
 		done:(response)=>{
-			/*fetch('https://finans.truncgil.com/today.json')
+			fetch('https://finans.truncgil.com/today.json')
 			.then(response => response.json())
 			.then(data => {
+				fundsData = response;
+				fundsData.filter(item=>item.currencyType == "Gram-Altın")[0].endex=data["gram-altin"].Alış
+				calculateFunds(response);
 				console.log(data["gram-altin"])
-				calculateFunds();
-			});*/
-			fundsData = response;
-			calculateFunds(response);
+			})
+			.catch(error=>{
+				fundsData = response;
+				calculateFunds(response);
+			});
+
 		},
 		fail:(error)=>{
 			throw new Error(error).stack;
